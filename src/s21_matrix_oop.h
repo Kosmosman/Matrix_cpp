@@ -1,6 +1,7 @@
 #ifndef S21_MATRIX_OOP_H_
 #define S21_MATRIX_OOP_H_
 
+#include <cmath>
 #include <exception>
 #include <iostream>
 
@@ -11,6 +12,9 @@ class S21Matrix {
   void s21_create_matrix(int rows, int cols);
   void s21_copy_matrix(const S21Matrix& other);
   void s21_remove_matrix();
+  int s21_switch_rows(int row_1);
+  double s21_triangle_determinant(double mul);
+  void s21_decrease_matrix(int row, int column);
 
  public:
   S21Matrix();
@@ -28,6 +32,20 @@ class S21Matrix {
   S21Matrix CalcComplements();
   double Determinant();
   S21Matrix InverseMatrix();
+
+  S21Matrix operator+(const S21Matrix& other);
+  S21Matrix operator-(const S21Matrix& other);
+  S21Matrix operator*(const S21Matrix& other);
+  bool operator==(const S21Matrix& other);
+  void operator=(const S21Matrix& other);
+  void operator+=(const S21Matrix& other);
+  void operator-=(const S21Matrix& other);
+  void operator*=(const S21Matrix& other);
+  friend S21Matrix operator*(double num, const S21Matrix& other);
+  friend S21Matrix operator*(const S21Matrix& other, double num);
 };
+
+S21Matrix operator*(double num, const S21Matrix& other);
+S21Matrix operator*(const S21Matrix& other, double num);
 
 #endif  // S21_MATRIX_OOP_H_
