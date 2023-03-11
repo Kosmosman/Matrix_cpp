@@ -1,5 +1,6 @@
 #include "s21_matrix_oop.h"
 
+/// @brief Создание матрицы
 void S21Matrix::s21_create_matrix(int rows, int cols) {
   if (rows <= 0 || cols <= 0)
     throw std::length_error(
@@ -18,8 +19,12 @@ void S21Matrix::s21_create_matrix(int rows, int cols) {
   }
 }
 
+/// @brief Копирование матрицы
 void S21Matrix::s21_copy_matrix(const S21Matrix& other) {
-  this->s21_create_matrix(other.rows_, other.cols_);
+  if (this->rows_ != other.rows_ || this->cols_ != other.cols_) {
+    this->s21_remove_matrix();
+    this->s21_create_matrix(other.rows_, other.cols_);
+  }
   for (int i = 0; i < this->rows_; ++i) {
     for (int j = 0; j < this->cols_; ++j) {
       this->matrix_[i][j] = other.matrix_[i][j];
@@ -96,10 +101,5 @@ void S21Matrix::s21_decrease_matrix(int row, int column) {
       j_result = 0;
       i_result++;
     }
-  int tmp_row = this->rows_;
-  int tmp_col = this->cols_;
-  this->s21_remove_matrix();
-  this->rows_ = tmp_row;
-  this->cols_ = tmp_col;
-  this->matrix_ = tmp.matrix_;
+  this->s21_copy_matrix(tmp);
 }

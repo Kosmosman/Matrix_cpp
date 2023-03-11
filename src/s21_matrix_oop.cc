@@ -11,15 +11,20 @@ S21Matrix::S21Matrix(int rows, int cols) {
   s21_create_matrix(rows, cols);
 }
 
-S21Matrix::S21Matrix(const S21Matrix &other) { this->s21_copy_matrix(other); }
+S21Matrix::S21Matrix(const S21Matrix &other) {
+  this->s21_create_matrix(other.rows_, other.cols_);
+  this->s21_copy_matrix(other);
+}
 
 S21Matrix::S21Matrix(S21Matrix &&other) {
+  this->s21_create_matrix(other.rows_, other.cols_);
   this->s21_copy_matrix(other);
   other.s21_remove_matrix();
 }
 
 S21Matrix::~S21Matrix() { s21_remove_matrix(); }
 
+/// @brief Сравнение двух матриц
 bool S21Matrix::EqMatrix(const S21Matrix &other) {
   int result = true;
   if (this->rows_ != other.rows_ || this->cols_ != other.cols_) {
@@ -82,12 +87,7 @@ void S21Matrix::MulMatrix(const S21Matrix &other) {
       }
     }
   }
-  int tmp_row = other.rows_;
-  int tmp_col = this->cols_;
-  this->s21_remove_matrix();
-  this->rows_ = tmp_row;
-  this->cols_ = tmp_col;
-  this->matrix_ = tmp.matrix_;
+  this->s21_copy_matrix(tmp);
 }
 
 /// @brief Транспонирование матрицы.
@@ -172,4 +172,5 @@ S21Matrix S21Matrix::InverseMatrix() {
   } else {
     throw std::domain_error("Determinant is equal 0!");
   }
+  return tmp;
 }
