@@ -8,21 +8,21 @@ S21Matrix::S21Matrix() {
 S21Matrix::S21Matrix(int rows, int cols) {
   rows_ = rows;
   cols_ = cols;
-  s21_create_matrix(rows, cols);
+  CreateMatrix(rows, cols);
 }
 
 S21Matrix::S21Matrix(const S21Matrix &other) {
-  this->s21_create_matrix(other.rows_, other.cols_);
-  this->s21_copy_matrix(other);
+  this->CreateMatrix(other.rows_, other.cols_);
+  this->CopyMatrix(other);
 }
 
 S21Matrix::S21Matrix(S21Matrix &&other) {
-  this->s21_create_matrix(other.rows_, other.cols_);
-  this->s21_copy_matrix(other);
-  other.s21_remove_matrix();
+  this->CreateMatrix(other.rows_, other.cols_);
+  this->CopyMatrix(other);
+  other.RemoveMatrix();
 }
 
-S21Matrix::~S21Matrix() { s21_remove_matrix(); }
+S21Matrix::~S21Matrix() { RemoveMatrix(); }
 
 /// @brief Сравнение двух матриц
 bool S21Matrix::EqMatrix(const S21Matrix &other) {
@@ -44,7 +44,7 @@ bool S21Matrix::EqMatrix(const S21Matrix &other) {
 /// @brief Сумма двух матриц.
 void S21Matrix::SumMatrix(const S21Matrix &other) {
   if (this->rows_ != other.rows_ || this->cols_ != other.cols_)
-    throw std::invalid_argument("Both matrix must be a same size!");
+    throw std::length_error("Both matrix must be a same size!");
   for (int i = 0; i < this->rows_; i++) {
     for (int j = 0; j < this->cols_; j++) {
       this->matrix_[i][j] += other.matrix_[i][j];
@@ -55,7 +55,7 @@ void S21Matrix::SumMatrix(const S21Matrix &other) {
 /// @brief Разница двух матриц.
 void S21Matrix::SubMatrix(const S21Matrix &other) {
   if (this->rows_ != other.rows_ || this->cols_ != other.cols_)
-    throw std::invalid_argument("Both matrix must be a same size!");
+    throw std::length_error("Both matrix must be a same size!");
   for (int i = 0; i < this->rows_; i++) {
     for (int j = 0; j < this->cols_; j++) {
       this->matrix_[i][j] -= other.matrix_[i][j];
@@ -79,7 +79,7 @@ void S21Matrix::MulMatrix(const S21Matrix &other) {
         "Count of rows second matrix must be equal count of columns first "
         "matrix!");
   ;
-  S21Matrix tmp(other.rows_, this->cols_);
+  S21Matrix tmp(this->rows_, other.cols_);
   for (int i = 0; i < this->rows_; i++) {
     for (int j = 0; j < other.cols_; j++) {
       for (int k = 0; k < this->cols_; k++) {
@@ -87,7 +87,7 @@ void S21Matrix::MulMatrix(const S21Matrix &other) {
       }
     }
   }
-  this->s21_copy_matrix(tmp);
+  *this = tmp;
 }
 
 /// @brief Транспонирование матрицы.
@@ -104,17 +104,18 @@ S21Matrix S21Matrix::Transpose() {
 /// @brief Вычисление матрицы алгебраических дополнений
 S21Matrix S21Matrix::CalcComplements() {
   double minor = 0;
-  S21Matrix tmp(*this);
+  S21Matrix tmp(this->rows_ - 1, this->cols_ - 1);
+  S21Matrix result(this->rows_, this->cols_);
   for (int i = 0; i < this->rows_; i++) {
     for (int j = 0; j < this->cols_; j++) {
-      tmp.s21_decrease_matrix(i, j);
+      tmp = this->DecreaseMatrix(i, j);
       minor = tmp.Determinant();
       if ((i + j) % 2) minor = -minor;
-      tmp.matrix_[i][j] = minor;
+      result.matrix_[i][j] = minor;
       minor = 0;
     }
   }
-  return tmp;
+  return result;
 }
 
 /// @brief Вычисление детерминанта матрицы (метод Гауса)
@@ -125,7 +126,7 @@ double S21Matrix::Determinant() {
   if (tmp.cols_ != tmp.rows_) throw std::length_error("Matrix must be square!");
   if (tmp.cols_ > 1) {
     for (int i = 0; i < tmp.rows_ && !zero; i++) {
-      if ((num = tmp.s21_switch_rows(i))) {
+      if ((num = tmp.SwithRows(i))) {
         if (num == 2) mul *= -1;
         for (int j = i; j < tmp.rows_ - 1; j++) {
           if (!state && tmp.matrix_[j][i]) {
@@ -150,7 +151,7 @@ double S21Matrix::Determinant() {
   } else {
     res = tmp.matrix_[0][0];
   }
-  if (!zero) res = tmp.s21_triangle_determinant(mul);
+  if (!zero) res = tmp.TriangleDeterminant(mul);
   return res;
 }
 
@@ -173,4 +174,38 @@ S21Matrix S21Matrix::InverseMatrix() {
     throw std::domain_error("Determinant is equal 0!");
   }
   return tmp;
+}
+
+/* Accessor and mutator */
+
+double S21Matrix::GetRows() { return rows_; }
+
+double S21Matrix::GetColumns() { return cols_; }
+
+double **S21Matrix::GetMatrix() { return matrix_; }
+
+void S21Matrix::SetRows(int rows) {
+  if (rows < 1)
+    throw std::invalid_argument("Count of rows can't be less than 1!");
+  int tmp = rows < rows_ ? rows : rows_;
+  S21Matrix tmpMatrix(rows, cols_);
+  for (int i = 0; i < tmp; i++) {
+    for (int j = 0; j < tmpMatrix.cols_; j++) {
+      tmpMatrix.matrix_[i][j] = this->matrix_[i][j];
+    }
+  }
+  *this = tmpMatrix;
+}
+
+void S21Matrix::SetColumns(int columns) {
+  if (columns < 0)
+    throw std::invalid_argument("Count of columns can't be less than 0!");
+  int tmp = columns < cols_ ? columns : cols_;
+  S21Matrix tmpMatrix(rows_, columns);
+  for (int i = 0; i < tmpMatrix.rows_; i++) {
+    for (int j = 0; j < tmp; j++) {
+      tmpMatrix.matrix_[i][j] = this->matrix_[i][j];
+    }
+  }
+  *this = tmpMatrix;
 }

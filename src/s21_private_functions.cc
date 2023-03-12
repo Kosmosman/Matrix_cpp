@@ -1,7 +1,7 @@
 #include "s21_matrix_oop.h"
 
 /// @brief Создание матрицы
-void S21Matrix::s21_create_matrix(int rows, int cols) {
+void S21Matrix::CreateMatrix(int rows, int cols) {
   if (rows <= 0 || cols <= 0)
     throw std::length_error(
         "Count of rows and columns can't be equal or less than 0");
@@ -20,10 +20,10 @@ void S21Matrix::s21_create_matrix(int rows, int cols) {
 }
 
 /// @brief Копирование матрицы
-void S21Matrix::s21_copy_matrix(const S21Matrix& other) {
+void S21Matrix::CopyMatrix(const S21Matrix& other) {
   if (this->rows_ != other.rows_ || this->cols_ != other.cols_) {
-    this->s21_remove_matrix();
-    this->s21_create_matrix(other.rows_, other.cols_);
+    this->RemoveMatrix();
+    this->CreateMatrix(other.rows_, other.cols_);
   }
   for (int i = 0; i < this->rows_; ++i) {
     for (int j = 0; j < this->cols_; ++j) {
@@ -33,7 +33,7 @@ void S21Matrix::s21_copy_matrix(const S21Matrix& other) {
 }
 
 /// @brief Очистка матрицы и зануление всех элементов объекта
-void S21Matrix::s21_remove_matrix() {
+void S21Matrix::RemoveMatrix() {
   if (matrix_) {
     delete[] matrix_[0];
     matrix_[0] = nullptr;
@@ -43,6 +43,7 @@ void S21Matrix::s21_remove_matrix() {
   rows_ = cols_ = 0;
 }
 
+/// @brief Отображение матрицы
 void S21Matrix::show() {
   for (int i = 0; i < rows_; i++) {
     for (int j = 0; j < cols_; j++) {
@@ -55,7 +56,7 @@ void S21Matrix::show() {
 /// @brief Проверяет строку на наличие в ней 0 в i-м столбце.
 /// В положительном случае, находит первую строку с ненулевым элементом. При
 /// ненахождении таковой, возвращает 0.
-int S21Matrix::s21_switch_rows(int row_1) {
+int S21Matrix::SwithRows(int row_1) {
   int tmp = 0, res = 0, row_2 = 0;
   if (this->matrix_[row_1][row_1] == 0) {
     for (int count = row_1 + 1; !res && count < this->rows_; count++) {
@@ -79,7 +80,7 @@ int S21Matrix::s21_switch_rows(int row_1) {
 
 /// @brief Нахождение детерминанта путем перемножения членов треугольной
 /// матрицы, находящихся на главной диагонали.
-double S21Matrix::s21_triangle_determinant(double mul) {
+double S21Matrix::TriangleDeterminant(double mul) {
   double res = 1;
   for (int i = 0; i < this->rows_; i++) {
     res *= this->matrix_[i][i];
@@ -88,7 +89,7 @@ double S21Matrix::s21_triangle_determinant(double mul) {
 }
 
 /// @brief Заполнение матрицы с вычеркнутыми строкой и столбцом.
-void S21Matrix::s21_decrease_matrix(int row, int column) {
+S21Matrix S21Matrix::DecreaseMatrix(int row, int column) {
   int i_result = 0, j_result = 0;
   S21Matrix tmp(this->rows_ - 1, this->cols_ - 1);
   for (int i = 0; i < this->rows_; i++)
@@ -101,5 +102,5 @@ void S21Matrix::s21_decrease_matrix(int row, int column) {
       j_result = 0;
       i_result++;
     }
-  this->s21_copy_matrix(tmp);
+  return tmp;
 }
