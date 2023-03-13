@@ -43,16 +43,6 @@ void S21Matrix::RemoveMatrix() {
   rows_ = cols_ = 0;
 }
 
-/// @brief Отображение матрицы
-void S21Matrix::show() {
-  for (int i = 0; i < rows_; i++) {
-    for (int j = 0; j < cols_; j++) {
-      std::cout << matrix_[i][j] << " ";
-    }
-    std::cout << std::endl;
-  }
-}
-
 /// @brief Проверяет строку на наличие в ней 0 в i-м столбце.
 /// В положительном случае, находит первую строку с ненулевым элементом. При
 /// ненахождении таковой, возвращает 0.

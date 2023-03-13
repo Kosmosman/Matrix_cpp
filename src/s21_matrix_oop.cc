@@ -78,7 +78,6 @@ void S21Matrix::MulMatrix(const S21Matrix &other) {
     throw std::length_error(
         "Count of rows second matrix must be equal count of columns first "
         "matrix!");
-  ;
   S21Matrix tmp(this->rows_, other.cols_);
   for (int i = 0; i < this->rows_; i++) {
     for (int j = 0; j < other.cols_; j++) {
@@ -163,8 +162,7 @@ S21Matrix S21Matrix::InverseMatrix() {
   double determinant = tmp.Determinant();
   if (fabs(determinant) > 1e-6) {
     if (tmp.rows_ == 1) {
-      S21Matrix result(1, 1);
-      result.matrix_[0][0] = 1.0 / tmp.matrix_[0][0];
+      tmp.matrix_[0][0] = 1.0 / tmp.matrix_[0][0];
     } else {
       tmp = tmp.CalcComplements();
       tmp = tmp.Transpose();
@@ -185,7 +183,7 @@ double S21Matrix::GetColumns() { return cols_; }
 double **S21Matrix::GetMatrix() { return matrix_; }
 
 void S21Matrix::SetRows(int rows) {
-  if (rows < 1)
+  if (rows < 0)
     throw std::invalid_argument("Count of rows can't be less than 1!");
   int tmp = rows < rows_ ? rows : rows_;
   S21Matrix tmpMatrix(rows, cols_);

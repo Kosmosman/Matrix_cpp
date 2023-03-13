@@ -310,6 +310,14 @@ TEST(MatrixTest, MatrixDeterminantCorrect) {
   EXPECT_DOUBLE_EQ(651, det);
 }
 
+TEST(MatrixTest, MatrixDeterminantCorrect2) {
+  S21Matrix one(1, 1);
+  one(0, 0) = 8;
+
+  double det = one.Determinant();
+  EXPECT_DOUBLE_EQ(8, det);
+}
+
 TEST(MatrixTest, MatrixInverseCorrect) {
   S21Matrix one(3, 3);
   S21Matrix two(3, 3);
@@ -336,6 +344,19 @@ TEST(MatrixTest, MatrixInverseCorrect) {
   result(2, 2) = 24;
 
   two = one.InverseMatrix();
+  EXPECT_EQ(two == result, true);
+}
+
+TEST(MatrixTest, MatrixInverseCorrect2) {
+  S21Matrix one(1, 1);
+  S21Matrix two(1, 1);
+  S21Matrix result(1, 1);
+
+  one(0, 0) = 2;
+
+  result(0, 0) = 0.5;
+  two = one.InverseMatrix();
+  std::cout << "result = " << two(0, 0);
   EXPECT_EQ(two == result, true);
 }
 

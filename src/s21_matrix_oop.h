@@ -23,7 +23,6 @@ class S21Matrix {
   S21Matrix(S21Matrix&& other);
   ~S21Matrix();
 
-  void show();
   bool EqMatrix(const S21Matrix& other);
   void SumMatrix(const S21Matrix& other);
   void SubMatrix(const S21Matrix& other);
