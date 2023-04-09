@@ -3,20 +3,17 @@ CC = gcc
 
 all: s21_matrix_oop.a
 
-build: s21_matrix_oop.cc s21_overload.cc s21_private_functions.cc
+build: s21_matrix_oop.cc
 	$(CC) -c $(CFLAGS) -lstdc++ -std=c++17 s21*.cc
 
 s21_matrix_oop.a: build
 	ar rcs s21_matrix_oop.a s21*.o
-	ranlib s21_matrix_oop.a
 
 clean:
 	rm -rf *.o *.out s21_matrix_oop.a unit_test
 	rm -rf *.gcda *.gcno report gcov_report.* gcov_report *.info
 
-rebuild:
-	make clean
-	make build
+rebuild: clean s21_matrix_oop.a
 
 leaks: test
 	leaks -atExit -- ./unit_test

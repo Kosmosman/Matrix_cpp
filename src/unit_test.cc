@@ -253,6 +253,29 @@ TEST(MatrixTest, MatrixTranspose) {
   EXPECT_EQ(two == result, true);
 }
 
+TEST(MatrixTest, MatrixTranspose2) {
+  S21Matrix one(2, 3);
+  S21Matrix two;
+  S21Matrix result(3, 2);
+
+  one(0, 0) = 1;
+  one(0, 1) = 2;
+  one(0, 2) = 3;
+  one(1, 0) = 4;
+  one(1, 1) = 5;
+  one(1, 2) = 6;
+
+  result(0, 0) = 1;
+  result(0, 1) = 4;
+  result(1, 0) = 2;
+  result(1, 1) = 5;
+  result(2, 0) = 3;
+  result(2, 1) = 6;
+
+  two = one.Transpose();
+  EXPECT_EQ(two == result, true);
+}
+
 TEST(MatrixTest, MatrixComplementCorrect) {
   S21Matrix one(3, 3);
   S21Matrix two(3, 3);
@@ -356,7 +379,6 @@ TEST(MatrixTest, MatrixInverseCorrect2) {
 
   result(0, 0) = 0.5;
   two = one.InverseMatrix();
-  std::cout << "result = " << two(0, 0);
   EXPECT_EQ(two == result, true);
 }
 
@@ -414,7 +436,7 @@ TEST(MatrixTest, MatrixOperatorPlus) {
 TEST(MatrixTest, MatrixOperatorPlusIncorrect) {
   S21Matrix one(3, 3);
   S21Matrix two(3, 4);
-  EXPECT_THROW(one + two, std::invalid_argument);
+  EXPECT_THROW(one + two, std::length_error);
 }
 
 TEST(MatrixTest, MatrixOperatorMinus) {
@@ -460,7 +482,7 @@ TEST(MatrixTest, MatrixOperatorMinus) {
 TEST(MatrixTest, MatrixOperatorMinusIncorrect) {
   S21Matrix one(3, 3);
   S21Matrix two(3, 4);
-  EXPECT_THROW(one - two, std::invalid_argument);
+  EXPECT_THROW(one - two, std::length_error);
 }
 
 TEST(MatrixTest, MatrixOperatorMulNum) {
@@ -537,7 +559,7 @@ TEST(MatrixTest, MatrixOperatorEq) {
   EXPECT_EQ(result, true);
 }
 
-TEST(MatrixTest, MatrixOperatorAssig) {
+TEST(MatrixTest, MatrixOperatorAssigCopy) {
   S21Matrix one(3, 3);
   S21Matrix two;
 
@@ -552,6 +574,26 @@ TEST(MatrixTest, MatrixOperatorAssig) {
   one(2, 2) = 9;
 
   two = one;
+
+  EXPECT_EQ(one == two, true);
+}
+
+TEST(MatrixTest, MatrixOperatorAssigMove) {
+  S21Matrix one(3, 3);
+  S21Matrix two;
+
+  one(0, 0) = 1;
+  one(0, 1) = 2;
+  one(0, 2) = 3;
+  one(1, 0) = 4;
+  one(1, 1) = 5;
+  one(1, 2) = 6;
+  one(2, 0) = 7;
+  one(2, 1) = 8;
+  one(2, 2) = 9;
+
+  two = one;
+  one = std::move(one);
 
   EXPECT_EQ(one == two, true);
 }
@@ -599,7 +641,7 @@ TEST(MatrixTest, MatrixOperatorSum) {
 TEST(MatrixTest, MatrixOperatorSumIncorrect) {
   S21Matrix one(3, 3);
   S21Matrix two(3, 4);
-  EXPECT_THROW(one += two, std::invalid_argument);
+  EXPECT_THROW(one += two, std::length_error);
 }
 
 TEST(MatrixTest, MatrixOperatorSub) {
@@ -645,7 +687,7 @@ TEST(MatrixTest, MatrixOperatorSub) {
 TEST(MatrixTest, MatrixOperatorSubIncorrect) {
   S21Matrix one(3, 3);
   S21Matrix two(3, 4);
-  EXPECT_THROW(one -= two, std::invalid_argument);
+  EXPECT_THROW(one -= two, std::length_error);
 }
 
 TEST(MatrixTest, MatrixOperatorEqMulNum) {
@@ -795,6 +837,22 @@ TEST(MatrixTest, MatrixSetRowsIncorrect) {
 TEST(MatrixTest, MatrixSetColumnsIncorrect) {
   S21Matrix one(3, 3);
   EXPECT_THROW(one.SetColumns(-2), std::invalid_argument);
+}
+
+TEST(MatrixTest, MatrixMulZeroSize) {
+  S21Matrix one;
+  S21Matrix two;
+
+  EXPECT_THROW(one.MulMatrix(two), std::length_error);
+}
+
+TEST(MatrixTest, MatrixMulNumZeroSize) {
+  S21Matrix one;
+  S21Matrix two;
+
+  one.MulNumber(15);
+
+  EXPECT_EQ(one == two, true);
 }
 
 int main(int argc, char **argv) {

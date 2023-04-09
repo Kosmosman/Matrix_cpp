@@ -1,39 +1,31 @@
 #include "s21_matrix_oop.h"
 
-S21Matrix::S21Matrix() {
-  rows_ = cols_ = 0;
-  matrix_ = nullptr;
-};
+S21Matrix::S21Matrix() : rows_(0), cols_(0), matrix_(nullptr){};
 
-S21Matrix::S21Matrix(int rows, int cols) {
-  rows_ = rows;
-  cols_ = cols;
-  CreateMatrix(rows, cols);
+S21Matrix::S21Matrix(int rows, int cols) : rows_(rows), cols_(cols) {
+  CreateMatrix();
 }
 
-S21Matrix::S21Matrix(const S21Matrix &other) {
-  this->CreateMatrix(other.rows_, other.cols_);
-  this->CopyMatrix(other);
+S21Matrix::S21Matrix(const S21Matrix& other) : S21Matrix() {
+  CopyMatrix(other);
 }
 
-S21Matrix::S21Matrix(S21Matrix &&other) {
-  this->CreateMatrix(other.rows_, other.cols_);
-  this->CopyMatrix(other);
-  other.RemoveMatrix();
+S21Matrix::S21Matrix(S21Matrix&& other) noexcept : S21Matrix() {
+  ReplaseMatrix(std::move(other));
 }
 
 S21Matrix::~S21Matrix() { RemoveMatrix(); }
 
 /// @brief Сравнение двух матриц
-bool S21Matrix::EqMatrix(const S21Matrix &other) {
+bool S21Matrix::EqMatrix(const S21Matrix& other) {
   int result = true;
-  if (this->rows_ != other.rows_ || this->cols_ != other.cols_) {
+  if (rows_ != other.GetRows() || cols_ != other.GetColumns()) {
     result = false;
   } else {
-    for (int i = 0; i < this->rows_ && result; i++) {
-      for (int j = 0; j < this->cols_ && result; j++) {
-        if (round(this->matrix_[i][j] * pow(10, 7)) !=
-            round(other.matrix_[i][j] * pow(10, 7)))
+    for (int i = 0; i < rows_ && result; i++) {
+      for (int j = 0; j < cols_ && result; j++) {
+        if (round(matrix_[i][j] * pow(10, 7)) !=
+            round(other(i, j) * pow(10, 7)))
           result = false;
       }
     }
@@ -42,59 +34,59 @@ bool S21Matrix::EqMatrix(const S21Matrix &other) {
 }
 
 /// @brief Сумма двух матриц.
-void S21Matrix::SumMatrix(const S21Matrix &other) {
-  if (this->rows_ != other.rows_ || this->cols_ != other.cols_)
+void S21Matrix::SumMatrix(const S21Matrix& other) {
+  if (rows_ != other.GetRows() || cols_ != other.GetColumns())
     throw std::length_error("Both matrix must be a same size!");
-  for (int i = 0; i < this->rows_; i++) {
-    for (int j = 0; j < this->cols_; j++) {
-      this->matrix_[i][j] += other.matrix_[i][j];
+  for (int i = 0; i < rows_; i++) {
+    for (int j = 0; j < cols_; j++) {
+      matrix_[i][j] += other(i, j);
     }
   }
 }
 
 /// @brief Разница двух матриц.
-void S21Matrix::SubMatrix(const S21Matrix &other) {
-  if (this->rows_ != other.rows_ || this->cols_ != other.cols_)
+void S21Matrix::SubMatrix(const S21Matrix& other) {
+  if (rows_ != other.GetRows() || cols_ != other.GetColumns())
     throw std::length_error("Both matrix must be a same size!");
-  for (int i = 0; i < this->rows_; i++) {
-    for (int j = 0; j < this->cols_; j++) {
-      this->matrix_[i][j] -= other.matrix_[i][j];
+  for (int i = 0; i < rows_; i++) {
+    for (int j = 0; j < cols_; j++) {
+      matrix_[i][j] -= other(i, j);
     }
   }
 }
 
 /// @brief Произведение матрицы на число.
 void S21Matrix::MulNumber(const double num) {
-  for (int i = 0; i < this->rows_; i++) {
-    for (int j = 0; j < this->cols_; j++) {
-      this->matrix_[i][j] *= num;
+  for (int i = 0; i < rows_; i++) {
+    for (int j = 0; j < cols_; j++) {
+      matrix_[i][j] *= num;
     }
   }
 }
 
 /// @brief Умножение матриц.
-void S21Matrix::MulMatrix(const S21Matrix &other) {
-  if (this->cols_ != other.rows_)
+void S21Matrix::MulMatrix(const S21Matrix& other) {
+  if (cols_ != other.rows_)
     throw std::length_error(
         "Count of rows second matrix must be equal count of columns first "
         "matrix!");
-  S21Matrix tmp(this->rows_, other.cols_);
-  for (int i = 0; i < this->rows_; i++) {
-    for (int j = 0; j < other.cols_; j++) {
-      for (int k = 0; k < this->cols_; k++) {
-        tmp.matrix_[i][j] += this->matrix_[i][k] * other.matrix_[k][j];
+  S21Matrix tmp(rows_, other.GetColumns());
+  for (int i = 0; i < rows_; i++) {
+    for (int j = 0; j < other.GetColumns(); j++) {
+      for (int k = 0; k < cols_; k++) {
+        tmp.matrix_[i][j] += matrix_[i][k] * other(k, j);
       }
     }
   }
-  *this = tmp;
+  *this = std::move(tmp);
 }
 
 /// @brief Транспонирование матрицы.
 S21Matrix S21Matrix::Transpose() {
-  S21Matrix tmp(*this);
-  for (int i = 0; i < this->rows_; i++) {
-    for (int j = 0; j < this->cols_; j++) {
-      tmp.matrix_[j][i] = this->matrix_[i][j];
+  S21Matrix tmp(cols_, rows_);
+  for (int i = 0; i < rows_; i++) {
+    for (int j = 0; j < cols_; j++) {
+      tmp.matrix_[j][i] = matrix_[i][j];
     }
   }
   return tmp;
@@ -103,11 +95,11 @@ S21Matrix S21Matrix::Transpose() {
 /// @brief Вычисление матрицы алгебраических дополнений
 S21Matrix S21Matrix::CalcComplements() {
   double minor = 0;
-  S21Matrix tmp(this->rows_ - 1, this->cols_ - 1);
-  S21Matrix result(this->rows_, this->cols_);
-  for (int i = 0; i < this->rows_; i++) {
-    for (int j = 0; j < this->cols_; j++) {
-      tmp = this->DecreaseMatrix(i, j);
+  S21Matrix tmp(rows_ - 1, cols_ - 1);
+  S21Matrix result(rows_, cols_);
+  for (int i = 0; i < rows_; i++) {
+    for (int j = 0; j < cols_; j++) {
+      tmp = DecreaseMatrix(i, j);
       minor = tmp.Determinant();
       if ((i + j) % 2) minor = -minor;
       result.matrix_[i][j] = minor;
@@ -156,8 +148,7 @@ double S21Matrix::Determinant() {
 
 /// @brief Инверсия матрицы, принимаются только квадратные
 S21Matrix S21Matrix::InverseMatrix() {
-  if (this->rows_ != this->cols_)
-    throw std::length_error("Matrix must be square!");
+  if (rows_ != cols_) throw std::length_error("Matrix must be square!");
   S21Matrix tmp(*this);
   double determinant = tmp.Determinant();
   if (fabs(determinant) > 1e-6) {
@@ -176,34 +167,226 @@ S21Matrix S21Matrix::InverseMatrix() {
 
 /* Accessor and mutator */
 
-double S21Matrix::GetRows() { return rows_; }
+int S21Matrix::GetRows() const { return rows_; }
 
-double S21Matrix::GetColumns() { return cols_; }
+int S21Matrix::GetColumns() const { return cols_; }
 
-double **S21Matrix::GetMatrix() { return matrix_; }
+double** S21Matrix::GetMatrix() const { return matrix_; }
 
 void S21Matrix::SetRows(int rows) {
-  if (rows < 0)
-    throw std::invalid_argument("Count of rows can't be less than 1!");
-  int tmp = rows < rows_ ? rows : rows_;
-  S21Matrix tmpMatrix(rows, cols_);
-  for (int i = 0; i < tmp; i++) {
-    for (int j = 0; j < tmpMatrix.cols_; j++) {
-      tmpMatrix.matrix_[i][j] = this->matrix_[i][j];
+  if (rows <= 0)
+    throw std::invalid_argument("Count of rows can't be less than 0!");
+  if (rows_ != rows) {
+    int tmpRow = rows < rows_ ? rows : rows_;
+    int tmpCol = cols_ > 0 ? cols_ : rows_;
+    S21Matrix tmpMatrix(rows, tmpCol);
+    for (int i = 0; i < tmpRow; i++) {
+      for (int j = 0; j < tmpCol; j++) {
+        tmpMatrix.matrix_[i][j] = matrix_[i][j];
+      }
     }
+    *this = std::move(tmpMatrix);
   }
-  *this = tmpMatrix;
 }
 
 void S21Matrix::SetColumns(int columns) {
-  if (columns < 0)
+  if (columns <= 0)
     throw std::invalid_argument("Count of columns can't be less than 0!");
-  int tmp = columns < cols_ ? columns : cols_;
-  S21Matrix tmpMatrix(rows_, columns);
-  for (int i = 0; i < tmpMatrix.rows_; i++) {
-    for (int j = 0; j < tmp; j++) {
-      tmpMatrix.matrix_[i][j] = this->matrix_[i][j];
+  if (cols_ != columns) {
+    int tmpCol = columns < cols_ ? columns : cols_;
+    int tmpRow = rows_ > 0 ? rows_ : cols_;
+    S21Matrix tmpMatrix(tmpRow, columns);
+    for (int i = 0; i < tmpRow; i++) {
+      for (int j = 0; j < tmpCol; j++) {
+        tmpMatrix.matrix_[i][j] = matrix_[i][j];
+      }
+    }
+    *this = std::move(tmpMatrix);
+  }
+}
+
+/* Overload operators */
+
+S21Matrix S21Matrix::operator+(const S21Matrix& other) {
+  S21Matrix tmp(*this);
+  tmp.SumMatrix(other);
+  return tmp;
+}
+
+S21Matrix S21Matrix::operator-(const S21Matrix& other) {
+  S21Matrix tmp(*this);
+  tmp.SubMatrix(other);
+  return tmp;
+}
+
+S21Matrix S21Matrix::operator*(const S21Matrix& other) {
+  S21Matrix tmp(*this);
+  tmp.MulMatrix(other);
+  return tmp;
+}
+
+bool S21Matrix::operator==(const S21Matrix& other) { return EqMatrix(other); }
+
+S21Matrix S21Matrix::operator=(const S21Matrix& other) {
+  CopyMatrix(other);
+  return *this;
+}
+
+S21Matrix S21Matrix::operator=(S21Matrix&& other) {
+  if (this != &other) {
+    RemoveMatrix();
+    ReplaseMatrix(std::move(other));
+  }
+  return *this;
+}
+
+S21Matrix S21Matrix::operator+=(const S21Matrix& other) {
+  SumMatrix(other);
+  return *this;
+}
+
+S21Matrix S21Matrix::operator-=(const S21Matrix& other) {
+  SubMatrix(other);
+  return *this;
+}
+
+S21Matrix S21Matrix::operator*=(const S21Matrix& other) {
+  MulMatrix(other);
+  return *this;
+}
+
+S21Matrix S21Matrix::operator*=(double num) {
+  MulNumber(num);
+  return *this;
+}
+
+S21Matrix operator*(double num, const S21Matrix& other) {
+  S21Matrix tmp(other);
+  tmp.MulNumber(num);
+  return tmp;
+}
+
+S21Matrix operator*(const S21Matrix& other, double num) {
+  S21Matrix tmp(other);
+  tmp.MulNumber(num);
+  return tmp;
+}
+
+double& S21Matrix::operator()(int i, int j) {
+  if (rows_ <= i || cols_ <= j || i < 0 || j < 0)
+    throw std::invalid_argument("Incorrect indexes!");
+  return matrix_[i][j];
+}
+
+double S21Matrix::operator()(int i, int j) const {
+  if (rows_ <= i || cols_ <= j || i < 0 || j < 0)
+    throw std::invalid_argument("Incorrect indexes!");
+  return matrix_[i][j];
+}
+
+/* Private functions */
+
+/// @brief Создание матрицы
+void S21Matrix::CreateMatrix() {
+  if (rows_ <= 0 || cols_ <= 0)
+    throw std::length_error(
+        "Count of rows and columns can't be equal or less than 0");
+  Allocator();
+}
+
+/// @brief Копирование матрицы
+void S21Matrix::CopyMatrix(const S21Matrix& other) {
+  if (this != &other) {
+    RemoveMatrix();
+    rows_ = other.GetRows();
+    cols_ = other.GetColumns();
+    CreateMatrix();
+    for (int i = 0; i < rows_; ++i) {
+      for (int j = 0; j < cols_; ++j) {
+        matrix_[i][j] = other(i, j);
+      }
     }
   }
-  *this = tmpMatrix;
+}
+
+/// @brief Очистка матрицы и зануление всех элементов объекта
+void S21Matrix::RemoveMatrix() {
+  if (matrix_) {
+    delete[] matrix_[0];
+    matrix_[0] = nullptr;
+  }
+  delete[] matrix_;
+  matrix_ = nullptr;
+  rows_ = cols_ = 0;
+}
+
+/// @brief Проверяет строку на наличие в ней 0 в i-м столбце.
+/// В положительном случае, находит первую строку с ненулевым элементом. При
+/// ненахождении таковой, возвращает 0.
+int S21Matrix::SwithRows(int row_1) {
+  int res = 0, row_2 = 0;
+  double tmp = 0;
+  if (matrix_[row_1][row_1] == 0) {
+    for (int count = row_1 + 1; !res && count < rows_; count++) {
+      if (matrix_[count][row_1] != 0) {
+        row_2 = count;
+        res = 2;
+      }
+    }
+    if (res) {
+      for (int i = 0; i < cols_; i++) {
+        tmp = matrix_[row_1][i];
+        matrix_[row_1][i] = matrix_[row_2][i];
+        matrix_[row_2][i] = tmp;
+      }
+    }
+  } else {
+    res = 1;
+  }
+  return res;
+}
+
+/// @brief Нахождение детерминанта путем перемножения членов треугольной
+/// матрицы, находящихся на главной диагонали.
+double S21Matrix::TriangleDeterminant(double mul) {
+  double res = 1;
+  for (int i = 0; i < rows_; i++) {
+    res *= matrix_[i][i];
+  }
+  return res / mul;
+}
+
+/// @brief Заполнение матрицы с вычеркнутыми строкой и столбцом.
+S21Matrix S21Matrix::DecreaseMatrix(int row, int column) {
+  int i_result = 0, j_result = 0;
+  S21Matrix tmp(rows_ - 1, cols_ - 1);
+  for (int i = 0; i < rows_; i++)
+    if (i != row) {
+      for (int j = 0; j < cols_; j++) {
+        if (j != column) {
+          tmp.matrix_[i_result][j_result++] = matrix_[i][j];
+        }
+      }
+      j_result = 0;
+      i_result++;
+    }
+  return tmp;
+}
+
+/// @brief Замещение матрицы
+void S21Matrix::ReplaseMatrix(S21Matrix&& other) {
+  rows_ = other.GetRows();
+  cols_ = other.GetColumns();
+  matrix_ = other.GetMatrix();
+  other.matrix_ = nullptr;
+  other.rows_ = other.cols_ = 0;
+}
+
+/// @brief Метод для выделения памяти
+void S21Matrix::Allocator() {
+  matrix_ = new double*[rows_]();
+  matrix_[0] = new double[rows_ * cols_]();
+  for (int i = 1; i < rows_; ++i) {
+    matrix_[i] = matrix_[0] + i * cols_;
+  }
 }
