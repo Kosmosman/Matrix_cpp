@@ -226,7 +226,6 @@ TEST(MatrixTest, MatrixMulIncorrectSize) {
 
 TEST(MatrixTest, MatrixTranspose) {
   S21Matrix one(5, 5);
-  S21Matrix two;
   S21Matrix result(5, 5);
 
   one(0, 0) = 1;
@@ -249,13 +248,12 @@ TEST(MatrixTest, MatrixTranspose) {
   result(2, 1) = 6;
   result(2, 2) = 9;
 
-  two = one.Transpose();
+  auto two = one.Transpose();
   EXPECT_EQ(two == result, true);
 }
 
 TEST(MatrixTest, MatrixTranspose2) {
   S21Matrix one(2, 3);
-  S21Matrix two;
   S21Matrix result(3, 2);
 
   one(0, 0) = 1;
@@ -272,13 +270,12 @@ TEST(MatrixTest, MatrixTranspose2) {
   result(2, 0) = 3;
   result(2, 1) = 6;
 
-  two = one.Transpose();
+  auto two = one.Transpose();
   EXPECT_EQ(two == result, true);
 }
 
 TEST(MatrixTest, MatrixComplementCorrect) {
   S21Matrix one(3, 3);
-  S21Matrix two(3, 3);
   S21Matrix result(3, 3);
 
   one(0, 0) = 1;
@@ -301,7 +298,7 @@ TEST(MatrixTest, MatrixComplementCorrect) {
   result(2, 1) = -2;
   result(2, 2) = 4;
 
-  two = one.CalcComplements();
+  auto two = one.CalcComplements();
   EXPECT_EQ(two == result, true);
 }
 
@@ -343,7 +340,6 @@ TEST(MatrixTest, MatrixDeterminantCorrect2) {
 
 TEST(MatrixTest, MatrixInverseCorrect) {
   S21Matrix one(3, 3);
-  S21Matrix two(3, 3);
   S21Matrix result(3, 3);
 
   one(0, 0) = 2;
@@ -366,19 +362,18 @@ TEST(MatrixTest, MatrixInverseCorrect) {
   result(2, 1) = -29;
   result(2, 2) = 24;
 
-  two = one.InverseMatrix();
+  auto two = one.InverseMatrix();
   EXPECT_EQ(two == result, true);
 }
 
 TEST(MatrixTest, MatrixInverseCorrect2) {
   S21Matrix one(1, 1);
-  S21Matrix two(1, 1);
   S21Matrix result(1, 1);
 
   one(0, 0) = 2;
 
   result(0, 0) = 0.5;
-  two = one.InverseMatrix();
+  auto two = one.InverseMatrix();
   EXPECT_EQ(two == result, true);
 }
 
@@ -395,7 +390,6 @@ TEST(MatrixTest, MatrixInverseIncorrectSize) {
 TEST(MatrixTest, MatrixOperatorPlus) {
   S21Matrix one(3, 3);
   S21Matrix two(3, 3);
-  S21Matrix three(3, 3);
   S21Matrix result(3, 3);
 
   one(0, 0) = 1;
@@ -418,7 +412,7 @@ TEST(MatrixTest, MatrixOperatorPlus) {
   two(2, 1) = 2;
   two(2, 2) = 1;
 
-  three = one + two;
+  auto three = one + two;
 
   result(0, 0) = 10;
   result(0, 1) = 10;
@@ -442,7 +436,6 @@ TEST(MatrixTest, MatrixOperatorPlusIncorrect) {
 TEST(MatrixTest, MatrixOperatorMinus) {
   S21Matrix one(3, 3);
   S21Matrix two(3, 3);
-  S21Matrix three(3, 3);
   S21Matrix result(3, 3);
 
   one(0, 0) = 1;
@@ -465,7 +458,7 @@ TEST(MatrixTest, MatrixOperatorMinus) {
   two(2, 1) = 2;
   two(2, 2) = 1;
 
-  three = two - one;
+  auto three = two - one;
   result(0, 0) = 8;
   result(0, 1) = 6;
   result(0, 2) = 4;
@@ -487,8 +480,6 @@ TEST(MatrixTest, MatrixOperatorMinusIncorrect) {
 
 TEST(MatrixTest, MatrixOperatorMulNum) {
   S21Matrix one(2, 2);
-  S21Matrix two(2, 2);
-  S21Matrix three(2, 2);
   S21Matrix result(2, 2);
 
   one(0, 0) = 1;
@@ -501,8 +492,8 @@ TEST(MatrixTest, MatrixOperatorMulNum) {
   result(1, 0) = 9;
   result(1, 1) = 12;
 
-  two = one * 3;
-  three = 3 * one;
+  auto two = one * 3;
+  auto three = 3 * one;
   EXPECT_EQ(two == result, true);
   EXPECT_EQ(three == result, true);
 }
@@ -510,7 +501,6 @@ TEST(MatrixTest, MatrixOperatorMulNum) {
 TEST(MatrixTest, MatrixOperatorMulMatrix) {
   S21Matrix one(2, 3);
   S21Matrix two(3, 2);
-  S21Matrix three(2, 2);
   S21Matrix result(2, 2);
 
   one(0, 0) = 1;
@@ -532,7 +522,7 @@ TEST(MatrixTest, MatrixOperatorMulMatrix) {
   result(1, 0) = 49;
   result(1, 1) = 64;
 
-  three = one * two;
+  auto three = one * two;
   EXPECT_EQ(three == result, true);
 }
 
@@ -711,7 +701,6 @@ TEST(MatrixTest, MatrixOperatorEqMulNum) {
 TEST(MatrixTest, MatrixOperatorEqMulMatrix) {
   S21Matrix one(2, 3);
   S21Matrix two(3, 2);
-  S21Matrix three(2, 2);
   S21Matrix result(2, 2);
 
   one(0, 0) = 1;

@@ -1,8 +1,8 @@
 #include "s21_matrix_oop.h"
 
-S21Matrix::S21Matrix() : rows_(0), cols_(0), matrix_(nullptr){};
+S21Matrix::S21Matrix() : rows_{}, cols_{}, matrix_{} {};
 
-S21Matrix::S21Matrix(int rows, int cols) : rows_(rows), cols_(cols) {
+S21Matrix::S21Matrix(int rows, int cols) : rows_{rows}, cols_{cols}, matrix_{} {
   CreateMatrix();
 }
 
@@ -11,26 +11,20 @@ S21Matrix::S21Matrix(const S21Matrix& other) : S21Matrix() {
 }
 
 S21Matrix::S21Matrix(S21Matrix&& other) noexcept : S21Matrix() {
-  ReplaseMatrix(std::move(other));
+  ReplaceMatrix(std::move(other));
 }
 
-S21Matrix::~S21Matrix() { RemoveMatrix(); }
+S21Matrix::~S21Matrix() noexcept { RemoveMatrix(); }
 
 /// @brief Сравнение двух матриц
 bool S21Matrix::EqMatrix(const S21Matrix& other) {
-  int result = true;
-  if (rows_ != other.GetRows() || cols_ != other.GetColumns()) {
-    result = false;
-  } else {
-    for (int i = 0; i < rows_ && result; i++) {
-      for (int j = 0; j < cols_ && result; j++) {
-        if (round(matrix_[i][j] * pow(10, 7)) !=
-            round(other(i, j) * pow(10, 7)))
-          result = false;
-      }
+  if (rows_ != other.rows_ || cols_ != other.cols_) return false;
+  for (int i = 0; i < rows_; i++) {
+    for (int j = 0; j < cols_; j++) {
+      if (fabs(matrix_[i][j] - other.matrix_[i][j]) > EPS) return false;
     }
   }
-  return result;
+  return true;
 }
 
 /// @brief Сумма двух матриц.
@@ -117,7 +111,7 @@ double S21Matrix::Determinant() {
   if (tmp.cols_ != tmp.rows_) throw std::length_error("Matrix must be square!");
   if (tmp.cols_ > 1) {
     for (int i = 0; i < tmp.rows_ && !zero; i++) {
-      if ((num = tmp.SwithRows(i))) {
+      if ((num = tmp.SwitchRows(i))) {
         if (num == 2) mul *= -1;
         for (int j = i; j < tmp.rows_ - 1; j++) {
           if (!state && tmp.matrix_[j][i]) {
@@ -151,7 +145,7 @@ S21Matrix S21Matrix::InverseMatrix() {
   if (rows_ != cols_) throw std::length_error("Matrix must be square!");
   S21Matrix tmp(*this);
   double determinant = tmp.Determinant();
-  if (fabs(determinant) > 1e-6) {
+  if (fabs(determinant) > EPS) {
     if (tmp.rows_ == 1) {
       tmp.matrix_[0][0] = 1.0 / tmp.matrix_[0][0];
     } else {
@@ -227,35 +221,35 @@ S21Matrix S21Matrix::operator*(const S21Matrix& other) {
 
 bool S21Matrix::operator==(const S21Matrix& other) { return EqMatrix(other); }
 
-S21Matrix S21Matrix::operator=(const S21Matrix& other) {
+S21Matrix& S21Matrix::operator=(const S21Matrix& other) {
   CopyMatrix(other);
   return *this;
 }
 
-S21Matrix S21Matrix::operator=(S21Matrix&& other) {
+S21Matrix& S21Matrix::operator=(S21Matrix&& other) {
   if (this != &other) {
     RemoveMatrix();
-    ReplaseMatrix(std::move(other));
+    ReplaceMatrix(std::move(other));
   }
   return *this;
 }
 
-S21Matrix S21Matrix::operator+=(const S21Matrix& other) {
+S21Matrix& S21Matrix::operator+=(const S21Matrix& other) {
   SumMatrix(other);
   return *this;
 }
 
-S21Matrix S21Matrix::operator-=(const S21Matrix& other) {
+S21Matrix& S21Matrix::operator-=(const S21Matrix& other) {
   SubMatrix(other);
   return *this;
 }
 
-S21Matrix S21Matrix::operator*=(const S21Matrix& other) {
+S21Matrix& S21Matrix::operator*=(const S21Matrix& other) {
   MulMatrix(other);
   return *this;
 }
 
-S21Matrix S21Matrix::operator*=(double num) {
+S21Matrix& S21Matrix::operator*=(double num) {
   MulNumber(num);
   return *this;
 }
@@ -323,7 +317,7 @@ void S21Matrix::RemoveMatrix() {
 /// @brief Проверяет строку на наличие в ней 0 в i-м столбце.
 /// В положительном случае, находит первую строку с ненулевым элементом. При
 /// ненахождении таковой, возвращает 0.
-int S21Matrix::SwithRows(int row_1) {
+int S21Matrix::SwitchRows(int row_1) {
   int res = 0, row_2 = 0;
   double tmp = 0;
   if (matrix_[row_1][row_1] == 0) {
@@ -374,10 +368,10 @@ S21Matrix S21Matrix::DecreaseMatrix(int row, int column) {
 }
 
 /// @brief Замещение матрицы
-void S21Matrix::ReplaseMatrix(S21Matrix&& other) {
-  rows_ = other.GetRows();
-  cols_ = other.GetColumns();
-  matrix_ = other.GetMatrix();
+void S21Matrix::ReplaceMatrix(S21Matrix&& other) {
+  rows_ = other.rows_;
+  cols_ = other.cols_;
+  matrix_ = other.matrix_;
   other.matrix_ = nullptr;
   other.rows_ = other.cols_ = 0;
 }

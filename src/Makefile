@@ -19,9 +19,7 @@ leaks: test
 	leaks -atExit -- ./unit_test
 
 clang:
-	cp ../materials/linters/.clang-format ../src/.clang-format
-	clang-format -style=Google -n *.cc *.h
-	rm .clang-format
+	clang-format -style=Google -i *.cc *.h
 
 test: s21_matrix_oop.a unit_test.cc
 	$(CC)  -std=c++17 --coverage s21*.cc unit_test.cc -o unit_test -lgtest -lstdc++
